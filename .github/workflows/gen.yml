@@ -15,15 +15,18 @@ jobs:
 
       - name: Setup and Verify Kaitai Struct Compiler
         run: |
-          wget $(curl -s https://api.github.com/repos/kaitai-io/kaitai_struct_compiler/releases/latest | grep browser_download_url | cut -d '"' -f 4 | grep 'zip$') -O kaitai-struct-compiler.zip
+          COMPILER_ZIP=$(curl -s https://api.github.com/repos/kaitai-io/kaitai_struct_compiler/releases/latest | grep browser_download_url | cut -d '"' -f 4 | grep 'zip$')
+          wget $COMPILER_ZIP -O kaitai-struct-compiler.zip
           unzip kaitai-struct-compiler.zip -d kaitai-struct-compiler
-          echo "$PWD/kaitai-struct-compiler/bin" >> $GITHUB_PATH
-          export PATH=$PWD/kaitai-struct-compiler/bin:$PATH
-          if ! command -v kaitai-struct-compiler &> /dev/null
-          then
-              echo "kaitai-struct-compiler could not be found"
+          echo "Kaitai Struct Compiler downloaded and unzipped."
+          KSC_PATH=$(find $PWD/kaitai-struct-compiler -name 'kaitai-struct-compiler' -type f)
+          if [ -z "$KSC_PATH" ]; then
+              echo "Kaitai Struct Compiler executable not found."
               exit 1
           fi
+          chmod +x $KSC_PATH
+          echo "Kaitai Struct Compiler is at $KSC_PATH"
+          echo "$(dirname $KSC_PATH)" >> $GITHUB_PATH
           kaitai-struct-compiler --version
           mkdir -p compiled
           kaitai-struct-compiler --target python --outdir compiled *.ksy
@@ -32,5 +35,3 @@ jobs:
         uses: actions/upload-artifact@main
         with:
           name: compiled-python
-          path: compiled/
-          
