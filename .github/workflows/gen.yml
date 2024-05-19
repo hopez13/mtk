@@ -13,16 +13,20 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@main
 
-      - name: Download latest Kaitai Struct Compiler
+      - name: Setup and Verify Kaitai Struct Compiler
         run: |
-          wget $(curl -s https://api.github.com/repos/kaitai-io/kaitai_struct_compiler/releases/latest | grep browser_download_url | cut -d '"' -f 4 | grep 'zip$')
-          unzip kaitai-struct-compiler*.zip -d kaitai-struct-compiler
+          wget $(curl -s https://api.github.com/repos/kaitai-io/kaitai_struct_compiler/releases/latest | grep browser_download_url | cut -d '"' -f 4 | grep 'zip$') -O kaitai-struct-compiler.zip
+          unzip kaitai-struct-compiler.zip -d kaitai-struct-compiler
           echo "$PWD/kaitai-struct-compiler/bin" >> $GITHUB_PATH
-
-      - name: Compile KSY file
-        run: |
+          export PATH=$PWD/kaitai-struct-compiler/bin:$PATH
+          if ! command -v kaitai-struct-compiler &> /dev/null
+          then
+              echo "kaitai-struct-compiler could not be found"
+              exit 1
+          fi
+          kaitai-struct-compiler --version
           mkdir -p compiled
-          kaitai-struct-compiler/bin/kaitai-struct-compiler --target python --outdir compiled *.ksy
+          kaitai-struct-compiler --target python --outdir compiled *.ksy
 
       - name: Upload Compiled Python as Artifact
         uses: actions/upload-artifact@main
