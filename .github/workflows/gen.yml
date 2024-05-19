@@ -21,10 +21,8 @@ jobs:
 
       - name: Compile KSY file
         run: |
-          mkdir compiled
-          for ksy_file in $(find . -name '*.ksy'); do
-            kaitai-struct-compiler --target python --outdir compiled $ksy_file
-          done
+          mkdir -p compiled
+          find . -name '*.ksy' -exec kaitai-struct-compiler --target python --outdir compiled {} +
 
       - name: Upload Compiled Python as Artifact
         uses: actions/upload-artifact@main
