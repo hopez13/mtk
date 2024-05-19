@@ -1,0 +1,33 @@
+name: .ksy to .py
+
+on:
+  push:
+    paths:
+      - '**.ksy'
+
+jobs:
+  compile-and-upload:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@main
+
+      - name: Download latest Kaitai Struct Compiler
+        run: |
+          wget $(curl -s https://api.github.com/repos/kaitai-io/kaitai_struct_compiler/releases/latest | grep browser_download_url | cut -d '"' -f 4 | grep 'zip$')
+          unzip kaitai-struct-compiler*.zip -d kaitai-struct-compiler
+          echo "$PWD/kaitai-struct-compiler/bin" >> $GITHUB_PATH
+
+      - name: Compile KSY file
+        run: |
+          mkdir compiled
+          for ksy_file in $(find . -name '*.ksy'); do
+            kaitai-struct-compiler --target python --outdir compiled $ksy_file
+          done
+
+      - name: Upload Compiled Python as Artifact
+        uses: actions/upload-artifact@main
+        with:
+          name: compiled-python
+          path: compiled/
+          
