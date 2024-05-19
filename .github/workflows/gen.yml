@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - '**.ksy'
+  workflow_dispatch:
 
 jobs:
   compile-and-upload:
