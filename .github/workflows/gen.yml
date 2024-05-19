@@ -22,7 +22,7 @@ jobs:
       - name: Compile KSY file
         run: |
           mkdir -p compiled
-          find . -name '*.ksy' -exec kaitai-struct-compiler --target python --outdir compiled {} +
+          find . -name '*.ksy' -exec ./kaitai-struct-compiler/bin/kaitai-struct-compiler --target python --outdir compiled {} +
 
       - name: Upload Compiled Python as Artifact
         uses: actions/upload-artifact@main
